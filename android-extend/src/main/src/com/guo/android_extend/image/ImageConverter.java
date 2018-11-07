@@ -18,10 +18,9 @@ public class ImageConverter {
 
 
 	private native int image_init(int width, int height, int format);
-	private native int image_convert(int handler, Bitmap bitmap, byte[] data);
-	private native int image_uninit(int handler);
+    private native int image_convert(Bitmap bitmap, byte[] data);
+    private native int image_uninit();
 	
-	private int handle;
 	
 	static {
 		System.loadLibrary("image");
@@ -29,7 +28,6 @@ public class ImageConverter {
 	
 	public ImageConverter() {
 		// TODO Auto-generated constructor stub
-		handle = -1;
 	}
 	
 	/**
@@ -40,19 +38,17 @@ public class ImageConverter {
 	 * @return success is true.
 	 */
 	public boolean initial(int width, int height, int format) {
-		handle = image_init(width, height, format);
-		return handle != -1;
+        return -1 != image_init(width, height, format);
 	}
 	
 	public boolean convert(Bitmap src, byte[] data) {
-		return 0 == image_convert(handle, src, data);
+        return 0 == image_convert(src, data);
 	}
 	
 	public void destroy() {
-		if (handle != -1) {
-			image_uninit(handle);
-		}
-	}
+        image_uninit();
+    }
+
 	
 	public static int calcImageSize(int w, int h, int format) {
 		switch (format) {

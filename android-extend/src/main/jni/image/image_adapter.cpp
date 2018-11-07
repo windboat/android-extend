@@ -20,14 +20,19 @@ typedef struct imageformat_t {
 #endif
 }IMAGE_HANDLE, *LPIMAGE_HANDLE;
 
+LPIMAGE_HANDLE m_lpiimage_handle;
+
+
 static jint NIF_initial(JNIEnv *env, jobject object, jint width, jint height, jint format);
-static jint NIF_convert(JNIEnv* env, jobject obj, jint handle, jobject jbitmap, jbyteArray data);
-static jint NIF_uninitial(JNIEnv *env, jobject object, jint handle);
+
+static jint NIF_convert(JNIEnv *env, jobject obj, jobject jbitmap, jbyteArray data);
+
+static jint NIF_uninitial(JNIEnv *env, jobject object);
 
 static JNINativeMethod gMethods[] = {
-	{"image_init", "(III)I",(void*)NIF_initial},
-	{"image_convert", "(ILandroid/graphics/Bitmap;[B)I",(void*)NIF_convert},
-	{"image_uninit", "(I)I",(void*)NIF_uninitial},
+        {"image_init",    "(III)I",                         (void *) NIF_initial},
+        {"image_convert", "(Landroid/graphics/Bitmap;[B)I", (void *) NIF_convert},
+        {"image_uninit",  "()I",                            (void *) NIF_uninitial},
 };
 
 const char* JNI_NATIVE_INTERFACE_CLASS = "com/guo/android_extend/image/ImageConverter";
@@ -70,9 +75,11 @@ JNIEXPORT void JNI_OnUnload(JavaVM* vm, void* reserved){
    jint nRes = env->UnregisterNatives(cls);
 }
 
-jint NIF_uninitial(JNIEnv *env, jobject object, jint handle)
+jint NIF_uninitial(JNIEnv *env, jobject object)
 {
-	LPIMAGE_HANDLE engine = (LPIMAGE_HANDLE)handle;
+    LPIMAGE_HANDLE engine = m_lpiimage_handle;
+    if (engine == NULL)
+        return 0;
 	if (engine->pBuffer != NULL) {
 		free(engine->pBuffer);
 	}
@@ -115,14 +122,18 @@ jint NIF_initial(JNIEnv *env, jobject object, jint width, jint height, jint form
 		env->ThrowNew(env->FindClass("java/lang/Exception"), "FORMAT ERROR!");
 		return (jint)-1;
 	}
-
-	return (jlong)handle;
+    m_lpiimage_handle = handle;
+    return 0;
 }
 
-jint NIF_convert(JNIEnv* env, jobject obj, jint handle, jobject jbitmap, jbyteArray data)
+jint NIF_convert(JNIEnv *env, jobject obj, jobject jbitmap, jbyteArray data)
 {
 	int ret = 0;
-	LPIMAGE_HANDLE engine = (LPIMAGE_HANDLE)handle;
+    LPIMAGE_HANDLE engine = m_lpiimage_handle;
+
+    if (engine == NULL) {
+        return -1;
+    }
 	AndroidBitmapInfo info;
 	if (AndroidBitmap_getInfo(env, jbitmap, &info) < 0) {
 		return -1;

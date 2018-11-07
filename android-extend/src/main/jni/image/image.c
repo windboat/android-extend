@@ -171,14 +171,23 @@ void convert_8888_NV21(unsigned char * p8888, unsigned char *pNV12, int width, i
 			int Cb;
 			int Cr;
 
-			Y = (1225 * R + 2404 * G + 467 * B) >> 12;
+			Y = ( (  66 * R + 129 * G +  25 * B + 128) >> 8) +  16;
 			*pY = NV21_CLAMP_INT32_8(Y); pY++;
 			if ((i & 0x00000001) == 0x00000000) {
-				Cr = (524288 + 2048 * R - 1715 * G - 333 * B) >> 12;
-				Cb = (524288 - 691 * R - 1357 * G + 2048 * B) >> 12;
-				*pCrCb = NV21_CLAMP_INT32_8(Cr); pCrCb++;
-				*pCrCb = NV21_CLAMP_INT32_8(Cb); pCrCb++;
-			}
+				Cr = ( ( -38 * R -  74 * G + 112 * B + 128) >> 8) + 128;
+				Cb = ( ( 112 * R -  94 * G -  18 * B + 128) >> 8) + 128;
+                *pCrCb = NV21_CLAMP_INT32_8(Cb); pCrCb++;
+                *pCrCb = NV21_CLAMP_INT32_8(Cr); pCrCb++;
+            }
+
+//			Y = (1225 * R + 2404 * G + 467 * B) >> 12;
+//			*pY = NV21_CLAMP_INT32_8(Y); pY++;
+//			if ((i & 0x00000001) == 0x00000000) {
+//				Cr = (524288 + 2048 * R - 1715 * G - 333 * B) >> 12;
+//				Cb = (524288 - 691 * R - 1357 * G + 2048 * B) >> 12;
+//				*pCrCb = NV21_CLAMP_INT32_8(Cr); pCrCb++;
+//				*pCrCb = NV21_CLAMP_INT32_8(Cb); pCrCb++;
+//			}
 			p8888 += 4;
 		}
 	}
